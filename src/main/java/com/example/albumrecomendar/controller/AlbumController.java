@@ -5,18 +5,19 @@ import com.example.albumrecomendar.service.SpotifyService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Mono;
+//import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.util.List;
 
 @CrossOrigin
-@RestController
+@Controller //Can't use @RestController because every return value with @RestController is a ResponseBody, instead we use @Controller
 public class AlbumController {
 
     @Autowired
@@ -24,6 +25,14 @@ public class AlbumController {
     public AlbumController(SpotifyService spotifyService) {
         this.spotifyService = spotifyService;
     }
+
+
+    @GetMapping("/test")
+    public String testThymeleaf() {
+//        model.addAttribute("message", "Thymeleaf is working!");
+        return "test";
+    }
+
 
     @GetMapping("/search")
     public String searchAlbum(@RequestParam(value = "query") String query, Model model) {
@@ -33,7 +42,7 @@ public class AlbumController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return "search :: searchResults";
+        return "search";
     }
 
 
