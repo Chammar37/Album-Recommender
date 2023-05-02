@@ -47,12 +47,12 @@ public class AlbumController {
 
 
     @GetMapping("/recommendations")
-    public String getAlbumRecommendations(@RequestParam("albumId") String albumId,
+    public String getAlbumRecommendations(@RequestParam("artistId") String artistId,
                                           @RequestParam("energy") String energy,
                                           @RequestParam("danceability") String danceability,
                                           @RequestParam("valence") String valence,
                                           Model model) throws IOException{
-        List<Album> recommendations = spotifyService.getAlbumRecommendations(albumId, "", energy, danceability, valence);
+        List<Album> recommendations = spotifyService.getAlbumRecommendations(artistId, "hiphop","0c6xIDDpzE81m2q797ordA", energy, danceability, valence);
         return "recommendations";
     }
 

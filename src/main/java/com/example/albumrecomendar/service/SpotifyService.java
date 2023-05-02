@@ -14,6 +14,7 @@ import org.springframework.http.*;
 
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -135,29 +136,32 @@ public class SpotifyService {
 //        return albums;
 //    }
 
-    public List<Album> getAlbumRecommendations(String seedAlbum,
-                                              String genres,
-                                              String targetEnergy,
-                                              String targetDanceability,
-                                              String targetValence) throws IOException {
+    public List<Album> getAlbumRecommendations(String seedArtist,
+                                               String seedGenres,
+                                               String seedTracks,
+                                               String targetEnergy,
+                                               String targetDanceability,
+                                               String targetValence) throws IOException {
 
-        Map<String, String> params = new HashMap<>();
-        params.put("seed_artists", seedAlbum);
-        params.put("limit", "20");
-        params.put("market", "US");
-        params.put("min_energy", targetEnergy);
-        params.put("min_danceability", targetDanceability);
-        params.put("min_valence", targetValence);
+    HttpHeaders headers = getAuthorizationHeader();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    HttpEntity<String> entity = new HttpEntity<>(headers);
+
+    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(spotifyRecommendationsUrl)
+            .queryParam("seed_artists", seedArtist)
+            .queryParam("seed_genres", seedGenres)
+            .queryParam("seed_tracks", seedTracks)
+            .queryParam("limit", "20")
+            .queryParam("market", "US")
+            .queryParam("target_energy", targetEnergy)
+            .queryParam("target_danceability", targetDanceability)
+            .queryParam("target_valence", targetValence);
 
 
-        HttpHeaders headers = getAuthorizationHeader();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<Map<String, String>> entity = new HttpEntity<>(params, headers);
+    ResponseEntity<String> response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, entity, String.class);
+    SpotifyRecommendationsResponse recommendationsResponse = objectMapper.readValue(response.getBody(), SpotifyRecommendationsResponse.class);
 
-        ResponseEntity<String> response = restTemplate.exchange(spotifyRecommendationsUrl, HttpMethod.GET, entity, String.class);
-        SpotifyRecommendationsResponse recommendationsResponse = objectMapper.readValue(response.getBody(), SpotifyRecommendationsResponse.class);
-
-        List<Album> albumList = new ArrayList<>();
+    List<Album> albumList = new ArrayList<>();
 
         for (SpotifyTrack track : recommendationsResponse.getTracks()){
             String albumId = track.getAlbum().getId();
@@ -174,6 +178,34 @@ public class SpotifyService {
 
         return albumList;
     }
+
+
+////                ALTERNATIVE solution to creating headers/endpoint url               ///////
+
+//
+//    Map<String, String> params = new HashMap<>();
+//        params.put("seed_artists", seedArtist);
+//        params.put("seed_genres", seedGenres);
+//        params.put("seed_tracks", seedTracks);
+//        params.put("limit", "20");
+//        params.put("market", "US");
+//        params.put("target_energy", targetEnergy);
+//        params.put("target_danceability", targetDanceability);
+//        params.put("target_valence", targetValence);
+//
+//
+//    HttpHeaders headers = getAuthorizationHeader();
+//    headers.setContentType(MediaType.APPLICATION_JSON);
+//    HttpEntity<Map<String, String>> entity = new HttpEntity<>(params, headers);
+//
+//    ResponseEntity<String> response = restTemplate.exchange(spotifyRecommendationsUrl, HttpMethod.GET, entity, String.class);
+//    SpotifyRecommendationsResponse recommendationsResponse = objectMapper.readValue(response.getBody(), SpotifyRecommendationsResponse.class);
+//
+//    List<Album> albumList = new ArrayList<>();
+
+
+
+
 
 
 
