@@ -1,26 +1,29 @@
 package com.example.albumrecomendar.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.util.List;
 
-@JsonDeserialize(using = AlbumDeserializer.class)
+//@JsonDeserialize(using = AlbumDeserializer.class)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+
 public class Album {
 
-    @JsonProperty("id")
+    @JsonProperty("id") //id of album
     private String id;
-    @JsonProperty("name")
+    @JsonProperty("name") //name of album
     private String title;
-    @JsonProperty("artists")
+    @JsonProperty("artists") //artist that released album
     private List<Artist> artists;
-    private Image coverImageUrl;
+    @JsonProperty("images") //
+    private List<Image> images;
 
-    public Album (String id, String title, List<Artist> artists, Image coverImageUrl){
+    public Album (String id, String title, List<Artist> artists, List<Image> images){
         this.id = id;
         this.title = title;
         this.artists = artists;
-        this.coverImageUrl = coverImageUrl;
+        this.images = images;
     }
 
     public Album(){
@@ -50,20 +53,20 @@ public class Album {
         this.artists = artists;
     }
 
-    public void setCoverImageUrl(Image coverImageUrl){
-        this.coverImageUrl = coverImageUrl;
+    public void setImages(List<Image> images){
+        this.images = images;
     }
 
     public String getFirstArtistName(){
         return artists != null && !artists.isEmpty() ? artists.get(0).getName() : null;
     }
 
-    public Image getCoverImage(){
-        return coverImageUrl;
+    public List<Image> getImages(){
+        return images;
     }
 
     public String getCoverImageUrl(){
-        return coverImageUrl != null ? coverImageUrl.getUrl() : null;
+        return images != null ? getImages().get(0).getUrl() : null;
     }
 
 }

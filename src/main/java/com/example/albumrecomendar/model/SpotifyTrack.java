@@ -1,26 +1,33 @@
 package com.example.albumrecomendar.model;
 
-import java.util.*;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.*;
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class SpotifyTrack {
+    @JsonProperty("id") //this gets track id
     private String id;
+    @JsonProperty("name") //this gets track name
     private String name;
-    private List<Artist> Artists;
-    private Album Album;
+    @JsonProperty("artists") //this gets artists on track
+    private List<Artist> artists;
+    @JsonProperty("album") //in the album class we will get the fields of the album
+    private Album album;
 
 
     public SpotifyTrack(String id, String name, List<com.example.albumrecomendar.model.Artist> artists, Album album) {
         this.id = id;
         this.name = name;
-        Artists = artists;
-        Album = album;
+        this.artists = artists;
+        this.album = album;
     }
 
     public SpotifyTrack(){
         this.id = "No ID set";
         this.name = "No Name set";
-        this.Artists = null;
-        this.Album = null;
+        this.artists = null;
+        this.album = null;
     }
 
 
@@ -41,18 +48,18 @@ public class SpotifyTrack {
     }
 
     public List<Artist> getArtists() {
-        return Artists;
+        return artists;
     }
 
     public void setArtists(List<Artist> artists) {
-        Artists = artists;
+        this.artists = artists;
     }
 
     public Album getAlbum() {
-        return Album;
+        return album;
     }
 
     public void Album(Album album) {
-        Album = album;
+        this.album = album;
     }
 }

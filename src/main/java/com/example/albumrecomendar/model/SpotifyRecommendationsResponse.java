@@ -21,3 +21,4 @@ public class SpotifyRecommendationsResponse {
         this.tracks = tracks;
     }
 }
+

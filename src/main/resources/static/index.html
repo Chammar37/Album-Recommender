@@ -30,7 +30,7 @@
             <tr th:each="album : ${albums.albums}">
                 <td th:text="${album.title}"></td>
                 <td th:text="${album.artist.name}"></td>
-                <td><img th:src="${album.coverImageUrl}"alt="Album Cover Image" width="200"/></td>
+                <td><img th:src="${album.images}"alt="Album Cover Image" width="200"/></td>
             </tr>
         </tbody>
     </table>

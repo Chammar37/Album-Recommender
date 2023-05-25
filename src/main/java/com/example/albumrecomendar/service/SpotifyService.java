@@ -1,18 +1,14 @@
 package com.example.albumrecomendar.service;
 
-import com.example.albumrecomendar.config.*;
 import com.example.albumrecomendar.model.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -123,6 +119,9 @@ public class SpotifyService {
         JsonNode rootNode = objectMapper.readTree(response.getBody());
         JsonNode albumsNode = rootNode.path("albums");
         Albums albums = objectMapper.readValue(albumsNode.toString(), Albums.class);
+
+        System.out.print("Spotify Recommendations Response\nHERE\n" + albums);
+
         return albums;
     }
 
@@ -151,25 +150,29 @@ public class SpotifyService {
             .queryParam("seed_artists", seedArtist)
             .queryParam("seed_genres", seedGenres)
             .queryParam("seed_tracks", seedTracks)
-            .queryParam("limit", "20")
-            .queryParam("market", "US")
             .queryParam("target_energy", targetEnergy)
             .queryParam("target_danceability", targetDanceability)
-            .queryParam("target_valence", targetValence);
+            .queryParam("target_valence", targetValence)
+            .queryParam("limit", "50")
+            .queryParam("market", "US");
 
 
     ResponseEntity<String> response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, entity, String.class);
+    //below 2 syso are the same
+//    System.out.print("\nRecommendations Response getBody()from API \n" + response.getBody());
+//    System.out.print("\nRecommendations Response from API \n" + response);
     SpotifyRecommendationsResponse recommendationsResponse = objectMapper.readValue(response.getBody(), SpotifyRecommendationsResponse.class);
-
+//    System.out.print("\First track in Response\nHERE\n" + recommendationsResponse.getTracks().get(0));
     List<Album> albumList = new ArrayList<>();
 
         for (SpotifyTrack track : recommendationsResponse.getTracks()){
             String albumId = track.getAlbum().getId();
             String albumName = track.getAlbum().getTitle();
             List<Artist> artistName = track.getAlbum().getArtist();
-            Image coverImage = track.getAlbum().getCoverImage();
+//            System.out.println(artistName.get(0).getName());
+            List<Image> coverImage = track.getAlbum().getImages();
 //            String artistName = track.getAlbum().getArtist().get(0).getName();
-//            String coverImageUrl = track.getAlbum().getCoverImageUrl();
+//            String coverImageUrl = track.getAlbum().getImages();
 
             Album album = new Album(albumId, albumName, artistName, coverImage);
             albumList.add(album);
@@ -243,7 +246,7 @@ public class SpotifyService {
 //            Album album = new Album();
 //            album.setTitle(spotifyAlbum.getName());
 //            album.setArtist(spotifyAlbum.getArtists().get(0).getName());
-//            album.setCoverImageUrl(spotifyAlbum.getImages().get(0).getUrl());
+//            album.setImages(spotifyAlbum.getImages().get(0).getUrl());
 //            album.setGenres(spotifyAlbum.getGenres());
 //            return ResponseEntity.ok(album);
 //        }

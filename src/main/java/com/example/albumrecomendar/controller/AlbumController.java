@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.util.List;
 
 @CrossOrigin
-@Controller //Can't use @RestController because every return value with @RestController is a ResponseBody, instead we use @Controller
+@RestController //Can't use @RestController because every return value with @RestController is a ResponseBody, instead we use @Controller
 public class AlbumController {
 
     @Autowired
@@ -35,25 +35,41 @@ public class AlbumController {
 
 
     @GetMapping("/search")
-    public String searchAlbum(@RequestParam(value = "query") String query, Model model) {
+    public List<Album> searchAlbum(@RequestParam(value = "query") String query, Model model) {
         try {
             Albums albums = spotifyService.searchAlbum(query);
-            model.addAttribute("albums", albums.getAlbums());
+//            model.addAttribute("albums", albums.getAlbums());
+            return albums.getAlbums();
         } catch (IOException e) {
             e.printStackTrace();
+            return null;
         }
-        return "search";
     }
 
 
     @GetMapping("/recommendations")
-    public String getAlbumRecommendations(@RequestParam("artistId") String artistId,
-                                          @RequestParam("energy") String energy,
-                                          @RequestParam("danceability") String danceability,
-                                          @RequestParam("valence") String valence,
-                                          Model model) throws IOException{
-        List<Album> recommendations = spotifyService.getAlbumRecommendations(artistId, "hiphop","0c6xIDDpzE81m2q797ordA", energy, danceability, valence);
-        return "recommendations";
+    public List<Album> getAlbumRecommendations(@RequestParam(value = "seedArtist") String seedArtist,
+                                               @RequestParam(value = "seedGenres") String seedGenres,
+                                               @RequestParam(value = "seedTracks") String seedTracks,
+                                               @RequestParam(value = "targetEnergy", required = false) String targetEnergy,
+                                               @RequestParam(value = "targetDanceability", required = false) String targetDanceability,
+                                               @RequestParam(value = "targetValence", required = false) String targetValence)
+                                            throws IOException{
+        try{
+            List<Album> recommendations = spotifyService.getAlbumRecommendations(
+                    seedArtist,
+                    seedGenres,
+                    seedTracks,
+                    targetEnergy,
+                    targetDanceability,
+                    targetValence);
+
+            return recommendations;
+        } catch(IOException e){
+            e.printStackTrace();
+            return null;
+        }
+
     }
 
 
@@ -69,7 +85,7 @@ public class AlbumController {
 //        Album album = new Album();
 //        album.setTitle("Madvillainy");
 //        album.setArtist("Madvillain");
-//        album.setCoverImageUrl("http://i.scdn.co/image/ab67616d0000b273163886adce4b09ec4eeea4e4");
+//        album.setImages("http://i.scdn.co/image/ab67616d0000b273163886adce4b09ec4eeea4e4");
 //        return album;
 //    }
 
