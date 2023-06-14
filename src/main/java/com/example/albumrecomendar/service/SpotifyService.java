@@ -162,7 +162,7 @@ public class SpotifyService {
 //    System.out.print("\nRecommendations Response getBody()from API \n" + response.getBody());
 //    System.out.print("\nRecommendations Response from API \n" + response);
     SpotifyRecommendationsResponse recommendationsResponse = objectMapper.readValue(response.getBody(), SpotifyRecommendationsResponse.class);
-//    System.out.print("\First track in Response\nHERE\n" + recommendationsResponse.getTracks().get(0));
+//    System.out.print("\nFirst track in Response\nHERE\n" + recommendationsResponse.getTracks().get(0).toString());
     List<Album> albumList = new ArrayList<>();
 
         for (SpotifyTrack track : recommendationsResponse.getTracks()){
@@ -178,6 +178,10 @@ public class SpotifyService {
             albumList.add(album);
         }
 
+        for (SpotifySeeds seed : recommendationsResponse.getSeeds() ) {
+            String genre = seed.getId();
+            System.out.print("\n"+genre);
+        }
 
         return albumList;
     }
