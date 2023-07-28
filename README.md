@@ -9,3 +9,5 @@ Built with springboot backend, model-training fused with spotify-api for recomme
 Releasing soon.
 
 Inspo: https://same.energy/
+
+![image](https://github.com/Chammar37/Album-Recommender/assets/24849675/34273108-61f7-47b6-bf60-d4dce0e1cc6d)
