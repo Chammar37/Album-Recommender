@@ -63,8 +63,8 @@
 
 <style>
   
-  button {
+  /* button {
     padding: 15px 20px;
-  }
+  } */
   
 </style>
