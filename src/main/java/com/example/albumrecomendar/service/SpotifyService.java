@@ -115,7 +115,7 @@ public class SpotifyService {
 // node before deserializing it into the Albums object.
     public Albums searchAlbum(String query) throws IOException {
         HttpEntity<String> request = new HttpEntity<>(null, getAuthorizationHeader());
-        ResponseEntity<String> response = restTemplate.exchange(spotifySearchUrl + "?q=" + query + "&type=album", HttpMethod.GET, request, String.class);
+        ResponseEntity<String> response = restTemplate.exchange(spotifySearchUrl + "?q=" + query + "&limit=50" + "&type=album", HttpMethod.GET, request, String.class);
         JsonNode rootNode = objectMapper.readTree(response.getBody());
         JsonNode albumsNode = rootNode.path("albums");
         Albums albums = objectMapper.readValue(albumsNode.toString(), Albums.class);
