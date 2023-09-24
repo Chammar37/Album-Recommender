@@ -15,12 +15,12 @@
     });
 
     const handleAlbumClick = async event => {
-        const album = event;
-        console.log("album clicked info " + album)
-        console.log("album clicked name " + album.name)
+        const album = event.detail;
+        console.log("album clicked info ", album)
+        console.log("album clicked name ", album.name)
         const response = await fetch(`http://localhost:8080/search?query=${album.name}`)
         albums = await response.json();
-        console.log("album search" + albums)
+        console.log("album search", albums)
         // similarAlbums = albums || [];
           
     }
