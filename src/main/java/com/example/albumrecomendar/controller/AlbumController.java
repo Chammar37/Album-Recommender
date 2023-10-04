@@ -46,7 +46,17 @@ public class AlbumController {
         }
     }
 
-
+    @GetMapping("/genre")
+    public List<String> getGenre(@RequestParam(value = "query") String query, Model model) {
+        try {
+            Artist artist = spotifyService.getGenre(query);
+//            model.addAttribute("albums", albums.getAlbums());
+            return artist.getGenres();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
     @GetMapping("/recommendations")
     public List<Album> getAlbumRecommendations(@RequestParam(value = "seedArtist") String seedArtist,
                                                @RequestParam(value = "seedGenres") String seedGenres,

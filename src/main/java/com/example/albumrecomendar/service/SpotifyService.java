@@ -33,6 +33,8 @@ public class SpotifyService {
     private String spotifySearchUrl;
     @Value("${spotify.api.recommendations.url}")
     private String spotifyRecommendationsUrl;
+    @Value("${spotify.api.artists.url}")
+    private String spotifyArtistsUrl;
 
 //    @Value("${spotify.api.access.token")
     private String accessToken;
@@ -117,14 +119,27 @@ public class SpotifyService {
         HttpEntity<String> request = new HttpEntity<>(null, getAuthorizationHeader());
         ResponseEntity<String> response = restTemplate.exchange(spotifySearchUrl + "?q=" + query + "&limit=50" + "&type=album", HttpMethod.GET, request, String.class);
         JsonNode rootNode = objectMapper.readTree(response.getBody());
+//        System.out.print("Spotify Root Search Response\nHERE\n" + rootNode);
         JsonNode albumsNode = rootNode.path("albums");
         Albums albums = objectMapper.readValue(albumsNode.toString(), Albums.class);
 
-        System.out.print("Spotify Recommendations Response\nHERE\n" + albums);
+        System.out.print("\nSpotify Album Search Response\nHERE\n" + albums);
 
         return albums;
     }
 
+    public Artist getGenre(String query) throws IOException {
+        HttpEntity<String> request = new HttpEntity<>(null, getAuthorizationHeader());
+        ResponseEntity<String> response = restTemplate.exchange(spotifyArtistsUrl + "?id=" + query, HttpMethod.GET, request, String.class);
+        //Json fetching and filtering from request
+        JsonNode rootNode = objectMapper.readTree(response.getBody());
+        JsonNode genreNode = rootNode.path("genres");
+        Artist artist = objectMapper.readValue(genreNode.toString(), Artist.class );
+
+        System.out.println("Genre found here: "+ artist);
+
+        return artist;
+    }
 
 // does not account for the structure of the Spotify API response
 //    public Albums searchAlbum(String query) throws IOException {
