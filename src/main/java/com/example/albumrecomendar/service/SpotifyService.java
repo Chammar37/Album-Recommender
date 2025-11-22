@@ -1,6 +1,7 @@
 package com.example.albumrecomendar.service;
 
 import com.example.albumrecomendar.model.*;
+import com.example.albumrecomendar.model.AudioFeatures;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -35,8 +36,11 @@ public class SpotifyService {
     private String spotifyRecommendationsUrl;
     @Value("${spotify.api.artists.url}")
     private String spotifyArtistsUrl;
+    @Value("${spotify.api.albums.url:https://api.spotify.com/v1/albums}")
+    private String spotifyAlbumsUrl;
+    @Value("${spotify.api.audio-features.url:https://api.spotify.com/v1/audio-features}")
+    private String spotifyAudioFeaturesUrl;
 
-//    @Value("${spotify.api.access.token")
     private String accessToken;
     private Instant accessTokenTimeLeft;
 
@@ -193,12 +197,125 @@ public class SpotifyService {
             albumList.add(album);
         }
 
-        for (SpotifySeeds seed : recommendationsResponse.getSeeds() ) {
-            String genre = seed.getId();
-            System.out.print("\n"+genre);
+        return albumList;
+    }
+
+    /**
+     * Get tracks from an album
+     */
+    public List<SpotifyTrack> getAlbumTracks(String albumId) throws IOException {
+        HttpEntity<String> request = new HttpEntity<>(null, getAuthorizationHeader());
+        String url = spotifyAlbumsUrl + "/" + albumId + "/tracks?limit=50";
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
+
+        JsonNode rootNode = objectMapper.readTree(response.getBody());
+        JsonNode itemsNode = rootNode.path("items");
+
+        List<SpotifyTrack> tracks = new ArrayList<>();
+        for (JsonNode trackNode : itemsNode) {
+            SpotifyTrack track = new SpotifyTrack();
+            track.setId(trackNode.path("id").asText());
+            track.setName(trackNode.path("name").asText());
+            tracks.add(track);
+        }
+        return tracks;
+    }
+
+    /**
+     * Get audio features for a track
+     */
+    public AudioFeatures getAudioFeatures(String trackId) throws IOException {
+        HttpEntity<String> request = new HttpEntity<>(null, getAuthorizationHeader());
+        String url = spotifyAudioFeaturesUrl + "/" + trackId;
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
+
+        return objectMapper.readValue(response.getBody(), AudioFeatures.class);
+    }
+
+    /**
+     * Get artist details including genres
+     */
+    public Artist getArtistDetails(String artistId) throws IOException {
+        HttpEntity<String> request = new HttpEntity<>(null, getAuthorizationHeader());
+        String url = spotifyArtistsUrl + "/" + artistId;
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
+
+        return objectMapper.readValue(response.getBody(), Artist.class);
+    }
+
+    /**
+     * Get album details
+     */
+    public Album getAlbumDetails(String albumId) throws IOException {
+        HttpEntity<String> request = new HttpEntity<>(null, getAuthorizationHeader());
+        String url = spotifyAlbumsUrl + "/" + albumId;
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
+
+        return objectMapper.readValue(response.getBody(), Album.class);
+    }
+
+    /**
+     * Find sonically similar albums based on an album ID
+     * Uses the album's tracks, artist, and audio features to generate recommendations
+     */
+    public List<Album> findSimilarAlbums(String albumId) throws IOException {
+        // 1. Get album details to get artist info
+        Album album = getAlbumDetails(albumId);
+        String artistId = album.getArtist() != null && !album.getArtist().isEmpty()
+            ? album.getArtist().get(0).getId()
+            : null;
+
+        // 2. Get tracks from the album to use as seed and for audio features
+        List<SpotifyTrack> tracks = getAlbumTracks(albumId);
+        if (tracks.isEmpty()) {
+            return new ArrayList<>();
         }
 
-        return albumList;
+        // Use first track as seed
+        String seedTrackId = tracks.get(0).getId();
+
+        // 3. Get audio features from the first track to match sonic characteristics
+        AudioFeatures features = getAudioFeatures(seedTrackId);
+
+        // 4. Get artist genres
+        String seedGenre = "";
+        if (artistId != null) {
+            Artist artist = getArtistDetails(artistId);
+            if (artist.getGenres() != null && !artist.getGenres().isEmpty()) {
+                seedGenre = artist.getGenres().get(0);
+            }
+        }
+
+        // 5. Call recommendations with extracted seeds and target audio features
+        return getAlbumRecommendations(
+            artistId != null ? artistId : "",
+            seedGenre,
+            seedTrackId,
+            String.valueOf(features.getEnergy()),
+            String.valueOf(features.getDanceability()),
+            String.valueOf(features.getValence())
+        );
+    }
+
+    /**
+     * Find similar albums with deduplication
+     */
+    public List<Album> findSimilarAlbumsDeduped(String albumId) throws IOException {
+        List<Album> recommendations = findSimilarAlbums(albumId);
+
+        // Deduplicate by album ID
+        Set<String> seenIds = new HashSet<>();
+        List<Album> dedupedList = new ArrayList<>();
+
+        for (Album album : recommendations) {
+            if (album.getId() != null && !seenIds.contains(album.getId())
+                && !album.getId().equals(albumId)) { // Also exclude the source album
+                seenIds.add(album.getId());
+                dedupedList.add(album);
+            }
+        }
+
+        return dedupedList;
     }
 
 

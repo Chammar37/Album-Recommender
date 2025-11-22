@@ -1,56 +1,120 @@
 <script>
-    import {createEventDispatcher } from 'svelte';
-    
+    import { createEventDispatcher } from 'svelte';
+
     export let id;
     export let name;
-    export let artist;
-    export let images;
-    
-    // create an event dispatcher
+    export let artists = [];
+    export let images = [];
+
     const dispatch = createEventDispatcher();
 
-    // const handleInteraction = async () => {
-      
-      // try {
-          const handleClick = async () => {
-            console.log("button clicked")
-            const response = await fetch(`http://localhost:8080/search?query=${name}`)
-            if (!response.ok){
-              throw new Error('HTTP error! Status: ${response.status}');
-            }
-            const data = await response.json();
-            console.log(data);
+    // Get artist name safely
+    $: artistName = artists && artists.length > 0 ? artists[0].name : 'Unknown Artist';
 
-            // dispatch a custom event with the selected album's data
-            dispatch('albumselect', { id, name, artist, images});
-            
-          }
-      // } catch (error) { 
-          // console.error('An error occurred and is being handled: ${error}')
-      // }
-    // }
+    // Get cover image safely
+    $: coverUrl = images && images.length > 0 ? images[0].url : '';
 
-    const handleKeyDown = async (event) => {
-          if (event.key === 'Enter'){
-            // await handleInteraction();
-          }
-      }
-
-    // console.log(name + ", " + artist[0].name + ", " + cover)
-  </script>
-  
-  <!-- BELOW DIV WORKS -->
-  <div class="album" on:click={handleClick} on:keydown="{handleKeyDown}"> 
-    <!-- <div class="album" > -->
-    <img class="album-cover" src="{images[0].url}" alt="{name} by {artist[0].name}" />
-    <!-- <h2>{name}</h2> -->
-    <!-- <h3>{artist[0].name}</h3> -->
-  </div>
-  
-  <style>
-    .album {
-      cursor: pointer;
+    function handleClick() {
+        dispatch('albumselect', { id, name, artists, images });
     }
-  </style>
-  
-  
+
+    function handleKeyDown(event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            handleClick();
+        }
+    }
+</script>
+
+<div
+    class="album"
+    on:click={handleClick}
+    on:keydown={handleKeyDown}
+    role="button"
+    tabindex="0"
+    aria-label="Find albums similar to {name} by {artistName}"
+>
+    {#if coverUrl}
+        <img class="album-cover" src={coverUrl} alt="{name} by {artistName}" loading="lazy" />
+    {:else}
+        <div class="album-cover placeholder">
+            <span>No Image</span>
+        </div>
+    {/if}
+
+    <div class="album-info">
+        <p class="album-name">{name}</p>
+        <p class="album-artist">{artistName}</p>
+    </div>
+</div>
+
+<style>
+    .album {
+        position: relative;
+        cursor: pointer;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+        background: #1a1a1a;
+    }
+
+    .album:hover {
+        transform: scale(1.03);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .album:focus {
+        outline: 2px solid #646cff;
+        outline-offset: 2px;
+    }
+
+    .album-cover {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        display: block;
+    }
+
+    .album-cover.placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #333;
+        color: #666;
+        font-size: 0.8rem;
+    }
+
+    .album-info {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 12px 10px;
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    .album:hover .album-info {
+        opacity: 1;
+    }
+
+    .album-name {
+        margin: 0 0 4px 0;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: white;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .album-artist {
+        margin: 0;
+        font-size: 0.75rem;
+        color: #aaa;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>

@@ -82,6 +82,20 @@ public class AlbumController {
 
     }
 
+    /**
+     * Find sonically similar albums based on an album ID
+     * This is the core endpoint for the same.energy-style discovery loop
+     */
+    @GetMapping("/similar")
+    public List<Album> getSimilarAlbums(@RequestParam(value = "albumId") String albumId) {
+        try {
+            return spotifyService.findSimilarAlbumsDeduped(albumId);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new java.util.ArrayList<>();
+        }
+    }
+
 
 //    @GetMapping(value = "/search")
 //    public ResponseEntity<Album> searchAlbum(@RequestParam String query) {
