@@ -34,7 +34,7 @@ public class SpotifyTokenResponse {
     }
 
     public String getToken_type(){
-        return this.getToken_type();
+        return this.token_type;
     }
 
     public void setExpires_in(int e_i){
